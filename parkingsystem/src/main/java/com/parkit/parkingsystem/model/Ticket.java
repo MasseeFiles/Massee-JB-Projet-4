@@ -7,9 +7,10 @@ public class Ticket {
     private int id;
     private ParkingSpot parkingSpot;
     private String vehicleRegNumber;
-    private double price;
+    private Double price;
     private Date inTime;
     private Date outTime;
+    private Boolean discount;
 
     public int getId() {
         return id;
@@ -57,5 +58,13 @@ public class Ticket {
 
     public void setOutTime(Date outTime) {
         this.outTime = outTime;
+    }
+
+    public Boolean getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount (Boolean discount) {
+        this.discount = discount;
     }
 }
