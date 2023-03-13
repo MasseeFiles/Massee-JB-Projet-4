@@ -1,4 +1,4 @@
-package com.parkit.parkingsystem.service;
+ package com.parkit.parkingsystem.service;
 
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
@@ -13,14 +13,13 @@ public class FareCalculatorService {
         long inHour = ticket.getInTime().getTime() ;        //result in milliseconds
         long outHour = ticket.getOutTime().getTime();       //result in milliseconds
         long duration = (outHour - inHour);    //result in milliseconds
+        ticket.setPrice (0);
 
         if (discount == true) {
-          duration =  duration - ( (5 * duration) / 100); //reduction de 5% si client regulier
-          // Pourquoi duration - (duration * 0.05) ne compile pas??? force chiffree 
+            duration =  duration - ( (5 * duration) / 100); //reduction de 5% si client regulier - result in millisecond - ok
         }
 
-        if (duration > 1800000) {  // reduction si durée de stationnement est inférieure à 30 minutes 
-        
+        if (duration > 1800000) {  
             switch (ticket.getParkingSpot().getParkingType()){
                 case CAR: {
                     ticket.setPrice( ( duration / 3600000.00 ) * Fare.CAR_RATE_PER_HOUR );// perte de precision 
@@ -32,8 +31,8 @@ public class FareCalculatorService {
                 }
                 default: throw new IllegalArgumentException("Unkown Parking Type");
             }
-
+        } else {    // reduction si durée de stationnement est inférieure à 30 minutes 
+            duration = 0;
         }
-     
     }
 }

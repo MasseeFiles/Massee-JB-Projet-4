@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;     // log4j fournit des fonctions perme
 
 import java.sql.*;      // 
 
-public class DataBaseConfig {       //classe correspondant à une base de données (sql)
+public class DataBaseConfig {       //classe permettant définition d'une adresse d'une BDD (appelée dans ticket.DAO)
 
     private static final Logger logger = LogManager.getLogger("DataBaseConfig"); //Creation d'un logger Databaseconfig : émission et stockage de messages suite à des événements.
 

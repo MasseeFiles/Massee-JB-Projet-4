@@ -15,7 +15,7 @@ import java.util.Date;
 
 import java.lang.Boolean;    // Import pour utilisation de booleens
 
-public class FareCalculatorServiceTest {    // declaration de la classe de test : comporte 7 tests
+public class FareCalculatorServiceTest {    // declaration de la classe de test
 
     private static FareCalculatorService fareCalculatorService;     //declaration d'un objet fareCalculatorService - classe definie dans service
     // pourquoi instanciation ne se fait pas par un constructeur? - parce que fait dans @before
@@ -97,7 +97,7 @@ public class FareCalculatorServiceTest {    // declaration de la classe de test 
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket , false);
-        assertEquals((0.75 * Fare.BIKE_RATE_PER_HOUR) , ticket.getPrice());      // Pourquoi price = 0  ?????????
+        assertEquals((0.75 * Fare.BIKE_RATE_PER_HOUR) , ticket.getPrice());     
     }
 
     @Test
@@ -156,35 +156,32 @@ public class FareCalculatorServiceTest {    // declaration de la classe de test 
         assertEquals( 0 , ticket.getPrice());
     }
 
-        @Test       // test remise 5% client régulier - (voiture)
+    @Test       // test remise 5% client régulier - (voiture)
     public void calculateFareCarWithDiscount(){
         Date inTime = new Date();
         inTime.setTime( System.currentTimeMillis() - ( 60 * 60 * 1000) );  //test sur stationnement de 1h
         Date outTime = new Date();
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
-        Boolean discount = true;
 
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        // ticket.setDiscount(discount);      // variable discount est à manipuler dans ticket -   NON CAR VOULUE DANS CLACULATEFARE
-        fareCalculatorService.calculateFare(ticket, discount);
+        // ticket.setDiscount(discount);      // variable discount est à manipuler dans ticket 
+        fareCalculatorService.calculateFare(ticket, true);
         assertEquals( 1 * Fare.CAR_RATE_PER_HOUR * 0.95, ticket.getPrice());
     }
 
-        @Test      // test remise 5% client régulier - (moto)
+    @Test      // test remise 5% client régulier - (moto)
     public void calculateFareBikeWithDiscount(){
         Date inTime = new Date();
         inTime.setTime( System.currentTimeMillis() - ( 60 * 60 * 1000) );  //test sur stationnement de 1h
         Date outTime = new Date();
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);
-        Boolean discount = true;
 
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        // ticket.setDiscount(discount);     // variable discount est à manipuler dans ticket
-        fareCalculatorService.calculateFare(ticket , discount);
+        fareCalculatorService.calculateFare(ticket , true);
         assertEquals( 1 * Fare.BIKE_RATE_PER_HOUR * 0.95, ticket.getPrice());
     }
 }
