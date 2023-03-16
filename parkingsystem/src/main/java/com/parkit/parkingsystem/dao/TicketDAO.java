@@ -13,7 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-public class TicketDAO {  // classe intermédiaire entre objets métier et système de stockage
+public class TicketDAO {  // couche intermédiaire entre objets métier et système de stockage
 
     private static final Logger logger = LogManager.getLogger("TicketDAO");
 
@@ -25,7 +25,6 @@ public class TicketDAO {  // classe intermédiaire entre objets métier et syst�
             con = dataBaseConfig.getConnection(); // Modifie objet con pour chercher adresse de connection dans dataBaseConfig
             PreparedStatement ps = con.prepareStatement(DBConstants.SAVE_TICKET); // methode permettant une requete parametrés sql - voir données concernées ci-dessous 
             //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
-            //ps.setInt(1,ticket.getId());
             ps.setInt(1,ticket.getParkingSpot().getId());  // definition des parametres entrés dans la requete sql (id, vehiclenumber...)
             ps.setString(2, ticket.getVehicleRegNumber());
             ps.setDouble(3, ticket.getPrice());
@@ -40,7 +39,7 @@ public class TicketDAO {  // classe intermédiaire entre objets métier et syst�
         }
     }
 
-    public Ticket getTicket(String vehicleRegNumber) { //methode pour recuperer les donnes d'un ticket à partir d'un numero de vehicule
+    public Ticket getTicket(String vehicleRegNumber) { //methode pour créer un ticket à partir d'un numero de vehicule (parametre d'entrée)
         Connection con = null;
         Ticket ticket = null;
         try {
@@ -87,25 +86,30 @@ public class TicketDAO {  // classe intermédiaire entre objets métier et syst�
         return false;
     }
 
-    /* definition d'une methode qui retourne le nombre de dates de sortie d'un vehicule identifié par son numero d'immatriculation
-        doit detourner un int . S'il est > à 0, mettre le paramette de ticket discount à true poour appliquer reduction 
+    /* definition d'une methode qui retourne le nombre de tickets d'un vehicule identifié par son numero d'immatriculation
+        doit detourner un int. 
     */
 
-    public boolean getNbTicket (Ticket ticket) { //methode à appeler dans ticketfarecalculator, retourne directement le boolean discount à false ou true
-
-
-// Connection base sql
+    public int getNbOfTickets (String vehicleRegNumber) { //methode à appeler dans ticketfarecalculator, parametre vehicleRegNumber pour identifier le vehicule
         Connection con = null;
+        int ticketNumber = 0;
+        try {   // try permet une fermeture automatique du PreparedStatement
+              con = dataBaseConfig.getConnection();
+              String sql = "SELECT COUNT (*) AS 'ticketNumber' FROM ticket WHERE vehicleRegNumber LIKE ?";  
+              PreparedStatement ps = con.prepareStatement(sql);
 
-return true;
-
-//Chercher si numero de vehicule a une date de sortie - getOutTime
-
-//si date de sortie, modifier boolean discount à true , sinon false (voir si par defaut discount est à false)
-
-//Renvoyer discount boolean dans farecalculatorservice
+              ps.setString(1, vehicleRegNumber);   // insertion du parametre vehicleNumber dans le PreparedStatement ps
+              ResultSet rs = ps.executeQuery(); // ensemble des resultats de la requete sql definie avec le prestatement 
+          
+              if (rs.next()) {
+                ticketNumber = rs.getInt("ticketNumber");
+              }
+        } catch (Exception ex){
+            logger.error("Error loading ticketNumber",ex);
+        } finally {
+            dataBaseConfig.closeConnection(con);
+        }
+        return ticketNumber;
     }
-
-
 }
 
