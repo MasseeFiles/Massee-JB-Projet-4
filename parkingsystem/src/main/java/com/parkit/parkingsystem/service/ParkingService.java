@@ -21,7 +21,7 @@ public class ParkingService {
     private ParkingSpotDAO parkingSpotDAO;
     private  TicketDAO ticketDAO;
 
-    public ParkingService(InputReaderUtil inputReaderUtil, ParkingSpotDAO parkingSpotDAO, TicketDAO ticketDAO){
+    public ParkingService(InputReaderUtil inputReaderUtil, ParkingSpotDAO parkingSpotDAO, TicketDAO ticketDAO){  //constructeur de la class ParkingService
         this.inputReaderUtil = inputReaderUtil;
         this.parkingSpotDAO = parkingSpotDAO;
         this.ticketDAO = ticketDAO;
@@ -31,14 +31,13 @@ public class ParkingService {
         try{
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable(); //methode definie plus bas
             if(parkingSpot !=null && parkingSpot.getId() > 0){
-                String vehicleRegNumber = getVehichleRegNumber();
+                String vehicleRegNumber = getVehichleRegNumber(); 
                 parkingSpot.setAvailable(false);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
 
                 Date inTime = new Date();
                 Ticket ticket = new Ticket();
                 //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
-                //ticket.setId(ticketID);
                 ticket.setParkingSpot(parkingSpot);
                 ticket.setVehicleRegNumber(vehicleRegNumber);
                 ticket.setPrice(0);
@@ -65,7 +64,7 @@ public class ParkingService {
     }
 
     public ParkingSpot getNextParkingNumberIfAvailable(){
-        int parkingNumber=0;
+        int parkingNumber = 0;
         ParkingSpot parkingSpot = null;
         try{
             ParkingType parkingType = getVehichleType();
@@ -110,18 +109,19 @@ public class ParkingService {
             ticket.setOutTime(outTime);
             Boolean discount = false;
 
-            if (ticketDAO.getNbTicket(vehicleRegNumber) > 1) {    // appel methode pour determiner si vehicules reccurents
+            if (ticketDAO.getNbTicket(vehicleRegNumber) > 1) {    // appel methode getNbTicket pour determiner si vehicules reccurents
                 discount = true;
             }
 
             fareCalculatorService.calculateFare(ticket , discount);
-            if(ticketDAO.updateTicket(ticket)) {
+
+            if (ticketDAO.updateTicket(ticket)) { // condition : il y a eu un update de ticket (oui/non) - synthaxe ok car methode renvoie un boolean
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
-                parkingSpotDAO.updateParking(parkingSpot);
+                parkingSpotDAO.updateParking(parkingSpot);  // objet du test : methode appelée une fois (verification que place de parking est redevenue libre)
                 System.out.println("Please pay the parking fare:" + ticket.getPrice());
                 System.out.println("Recorded out-time for vehicle number:" + ticket.getVehicleRegNumber() + " is:" + outTime);
-            }else{
+            } else {
                 System.out.println("Unable to update ticket information. Error occurred");
             }
         }catch(Exception e){
