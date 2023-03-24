@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.ArgumentCaptor;  //importation de ArgumentCaptor
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Date;
 
@@ -41,7 +43,7 @@ public class ParkingServiceTest {
         try {
             when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
 
-            ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
+            ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);  //place occupée est Car, 1
             Ticket ticket = new Ticket();
             ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
             ticket.setParkingSpot(parkingSpot); // passage dans objet ticket du parkingSpot crée ligne 41
@@ -62,67 +64,38 @@ public class ParkingServiceTest {
     @Test
     public void testProcessIncomingVehicle(){
 
-/* 
-    il faut indiquer le comportement de getTicket quand appelé sur l'objet ticketDAO - ok dans @BeforeEach
-    il faut indiquer qu'il y a eu un update de ticket , donc que (ticketDAO.updateTicket(ticket)) est à true - ok dans @BeforeEach
-    il faut definir un objet parkingservice pour lancer methode processExitingVehicle() - ok dans @BeforeEach
-    il faut indiquer que l'attribut isAvailable de l'objet parkingspot est à false - ok dans @BeforeEach
-    il faut indiquer le comportement de getNbTicket quand il est appelé sur l'objet ticketDAO
-*/
+      //  test avec ArgumentCaptor
+          //GIVEN
+          ticketCaptor = ArgumentCaptor.forClass(Ticket.class); // meme chose que dans @Captor?
+          when(ticketDAO.saveTicket(any(Ticket.class))).thenReturn(false);  //mock du resultat de l'appel de fonction - QUESTION : pourquoi method saveTicket() renvoie dans tous les cas false???
+          when(ticketDAO.getNbTicket(anyString())).thenReturn(3); // on choisit le cas d'un vehicule recurrent avec 3 passages enregistrés - doit modifier discount pour FareCalculatorService
 
-/*
-    //  code avec tapSystemOut
-        //GIVEN
-        String text = tapSystemOut(() -> { //expression lambda pour definir le texte à comparer - tapSystemOut permet de recuperer 
-        print("Heureux de vous revoir ! En tant qu’utilisateur régulier de notre parking, vous allez obtenir une remise de 5%");
-        });
+          //WHEN
+          parkingService.processIncomingVehicle();
 
-        Assert.assertEquals("Hello Baeldung Readers!!", text.trim());
-}
-        when(ticketDAO.getNbTicket(anyString())).thenReturn (3);    // cas d'un vehicule recurrent avec 3 passages enregistrés
-        //WHEN
-        parkingService.processIncomingVehicle();
+          //THEN
+          verify(ticketDAO).saveTicket(ticketCaptor.capture());
+          Ticket savedTicket = ticketCaptor.getValue();
 
-        //THEN
-        assertEquals("Heureux de vous revoir ! En tant qu’utilisateur régulier de notre parking, vous allez obtenir une remise de 5%", ); 
-    }
-*/
+          assertEquals(savedTicket.getParkingSpot(), ticket.getParkingSpot());//ok dans @BeforeEach
+          assertEquals(savedTicket.getVehicleRegNumber(), ticket.getVehicleRegNumber());//ok dans @BeforeEach
+          assertEquals(savedTicket.getInTime(), ticket.getInTime());//ok dans @BeforeEach
+          //  assertEquals(savedTicket.getOutTime(), ticket.getOutTime());
+          //  assertEquals(savedTicket.getPrice(), ticket.getPrice());
 
-      //  code avec ArgumentCaptor
-
-        //GIVEN
-        ticketCaptor = ArgumentCaptor.forClass(Ticket.class); // meme chose que dans @captor?
-
-        //WHEN
-        parkingService.processIncomingVehicle();
-
-        //THEN
-        verify(ticketDAO).saveTicket(ticketCaptor.capture());
-        Ticket savedTicket = ticketCaptor.getValue();
-
-        assertEquals(savedTicket.getParkingSpot(), ticket.getParkingSpot());//ok
-        assertEquals(savedTicket.getVehicleRegNumber(), ticket.getVehicleRegNumber());//ok
-        //assertEquals(savedTicket.getPrice(), ticket.getPrice());
-        assertEquals(savedTicket.getInTime(), ticket.getInTime());//ok
-        // assertEquals(savedTicket.getOutTime(), ticket.getOutTime());
-        assertEquals(savedTicket.getDiscount(), ticket.getDiscount());
-
-        //ou   assertEquals(savedTicket , ticket);
-
+          //ou   assertEquals(savedTicket , ticket);
     }
 
     @Test
     public void processExitingVehicleTest(){    
         // GIVEN
-        ticketCaptor = ArgumentCaptor.forClass(Ticket.class);
-/* 
-    il faut indiquer le comportement de getTicket quand appelé sur l'objet ticketDAO - ok dans @BeforeEach
-    il faut indiquer qu'il y a eu un update de ticket , donc que (ticketDAO.updateTicket(ticket)) est à true - ok dans @BeforeEach
-    il faut definir un objet parkingservice pour lancer methode processExitingVehicle() - ok dans @BeforeEach
-    il faut indiquer que l'attribut isAvailable de l'objet parkingspot est à false - ok dans @BeforeEach
-    il faut indiquer le comportement de getNbTicket quand il est appelé sur l'objet ticketDAO
-*/
+        ticketCaptor = ArgumentCaptor.forClass(Ticket.class); // meme chose que dans @Captor?
+        Date outTime = new Date();
+        ticket.setOutTime(outTime);
+
         when(ticketDAO.getNbTicket(anyString())).thenReturn(3);
+        when(ticketDAO.getTicket(anyString())).thenReturn(ticket);
+        when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(true);
 
         // WHEN
         parkingService.processExitingVehicle();
@@ -137,8 +110,33 @@ public class ParkingServiceTest {
         assertEquals(savedTicket.getPrice(), ticket.getPrice());
         assertEquals(savedTicket.getInTime(), ticket.getInTime());
         assertEquals(savedTicket.getOutTime(), ticket.getOutTime());
-        assertEquals(savedTicket.getDiscount(), ticket.getDiscount());  //pour tester methode getNbTicket
-        //  ou  assertEquals(true, ticket.getDiscount());
+        assertEquals(true, ticket.getDiscount());   // test de la prise en compte de vehicule reccurents - methode getNbTicket dans processExitingVehicle
 
+          //ou   assertEquals(savedTicket , ticket);
+    }
+
+    @Test
+    public void processExitingVehicleTestUnableUpdate(){    // resultat : doit verifier affichage du message "Unable to update ticket information. Error occurred"
+        // GIVEN
+        String expectedMessage = ("Unable to update ticket information. Error occurred") ;
+        String actualMessage = tapSystemOut(() -> {
+        parkingService.processExitingVehicle(); // code affichant message a comparer
+        });
+        Date outTime = new Date();
+        ticket.setOutTime(outTime);
+
+        when(ticketDAO.getNbTicket(anyString())).thenReturn(3);
+        when(ticketDAO.getTicket(anyString())).thenReturn(ticket);
+        when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(false);  //   a tester : pb avec BDD
+
+        // WHEN
+        parkingService.processExitingVehicle();
+
+        // THEN
+        assertEquals(expectedMessage, actualMessage);
+
+        //ou assertEquals(false , parkingSpot.getIsAvailable());
     }
 }
+        
+

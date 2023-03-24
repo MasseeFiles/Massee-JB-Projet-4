@@ -35,11 +35,11 @@ public class TicketDAO {  // couche intermédiaire entre objets métier et syst�
             logger.error("Error fetching next available slot",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
-            return false; // 
+            return false; 
         }
     }
 
-    public Ticket getTicket(String vehicleRegNumber) { //methode pour créer un ticket à partir d'un numero de vehicule (parametre d'entrée)
+    public Ticket getTicket(String vehicleRegNumber) { //methode pour retrouver dans BDD un ticket à partir d'un numero de vehicule (parametre d'entrée)
         Connection con = null;
         Ticket ticket = null;
         try {
@@ -78,7 +78,7 @@ public class TicketDAO {  // couche intermédiaire entre objets métier et syst�
             ps.setInt(3,ticket.getId());
             ps.execute();
             return true;
-        }catch (Exception ex){
+        } catch (Exception ex){
             logger.error("Error saving ticket info",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
@@ -86,30 +86,27 @@ public class TicketDAO {  // couche intermédiaire entre objets métier et syst�
         return false;
     }
 
-    /* definition d'une methode qui retourne le nombre de tickets d'un vehicule identifié par son numero d'immatriculation
-        doit detourner un int. 
-    */
-
-    public int getNbOfTickets (String vehicleRegNumber) { //methode à appeler dans ticketfarecalculator, parametre vehicleRegNumber pour identifier le vehicule
+    public int getNbTicket (String vehicleRegNumber) { // parametre vehicleRegNumber pour identifier le vehicule
         Connection con = null;
-        int ticketNumber = 0;
+        int numberOfTicketsStored = 0;
         try {   // try permet une fermeture automatique du PreparedStatement
               con = dataBaseConfig.getConnection();
-              String sql = "SELECT COUNT (*) AS 'ticketNumber' FROM ticket WHERE vehicleRegNumber LIKE ?";  
+              String queryParameter = vehicleRegNumber;
+              String sql = "SELECT COUNT(*) AS numberOfTicketsStored FROM ticket WHERE VEHICLE_REG_NUMBER LIKE ?";  
+              
               PreparedStatement ps = con.prepareStatement(sql);
-
-              ps.setString(1, vehicleRegNumber);   // insertion du parametre vehicleNumber dans le PreparedStatement ps
+              ps.setString(1, queryParameter);   // insertion du parametre vehicleNumber dans le PreparedStatement ps
               ResultSet rs = ps.executeQuery(); // ensemble des resultats de la requete sql definie avec le prestatement 
           
               if (rs.next()) {
-                ticketNumber = rs.getInt("ticketNumber");
+                numberOfTicketsStored = rs.getInt("numberOfTicketsStored");
               }
         } catch (Exception ex){
-            logger.error("Error loading ticketNumber",ex);
+            logger.error("Error loading numberOfTicketsStored",ex);
         } finally {
             dataBaseConfig.closeConnection(con);
         }
-        return ticketNumber;
+        return numberOfTicketsStored;
     }
 }
 

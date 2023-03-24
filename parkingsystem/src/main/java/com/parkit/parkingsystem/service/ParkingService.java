@@ -1,4 +1,4 @@
-package com.parkit.parkingsystem.service;
+       package com.parkit.parkingsystem.service;
 
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;

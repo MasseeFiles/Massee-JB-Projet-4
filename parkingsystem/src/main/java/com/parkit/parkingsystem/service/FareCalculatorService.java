@@ -13,7 +13,7 @@ public class FareCalculatorService {
         long inHour = ticket.getInTime().getTime() ;        //result in milliseconds
         long outHour = ticket.getOutTime().getTime();       //result in milliseconds
         long duration = (outHour - inHour);    //result in milliseconds
-        ticket.setPrice (0);
+        ticket.setPrice (0);  
 
         if (discount == true) {
             duration =  duration - ( (5 * duration) / 100); //reduction de 5% si client regulier - result in millisecond - ok
