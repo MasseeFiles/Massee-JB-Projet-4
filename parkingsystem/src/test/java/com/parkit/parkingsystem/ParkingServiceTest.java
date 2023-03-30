@@ -64,6 +64,7 @@ public class ParkingServiceTest {
 
     @Test
     public void testProcessIncomingVehicle(){
+
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(4);  
         when(inputReaderUtil.readSelection()).thenReturn(1); 
         when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);  
@@ -77,16 +78,6 @@ public class ParkingServiceTest {
         verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
         verify(ticketDAO, Mockito.times(1)).getNbTicket(anyString());
         assertTrue(outputStreamCaptor.toString().contains("Heureux de vous revoir ! En tant qu’utilisateur régulier de notre parking, vous allez obtenir une remise de 5%")); //  test discount vehicule recurrent
-
-/*
-        String expectedMessage = ("Heureux de vous revoir ! En tant qu’utilisateur régulier de notre parking, vous allez obtenir une remise de 5%");
-        //assertEquals(expectedMessage, outputStreamCaptor.toString());
-
-        verify(ticketDAO).saveTicket(ticketCaptor.capture()); // test de valeur d'un parametre passé à une methode
-        Ticket savedTicket = new Ticket();
-        savedTicket = ticketCaptor.getValue();
-        assertEquals(("ABCDEF") , savedTicket.getVehicleRegNumber());
-*/
     }
 
     @Test
@@ -132,8 +123,34 @@ public class ParkingServiceTest {
         // THEN
         verify(parkingSpotDAO, times(0)).updateParking(any(ParkingSpot.class)); 
         assertTrue(outputStreamCaptor.toString().contains("Unable to update ticket information. Error occurred"));
-
     }
+
+    @Test
+    public void testGetNextParkingNumberIfAvailable(){    
+
+        when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);  // assignation de parkingnumber - actual
+        when(inputReaderUtil.readSelection()).thenReturn(1);  //  assignation de parkingtype - actual
+        ParkingSpot parkingSpotExpected = new ParkingSpot(1, ParkingType.CAR , true);
+        
+        // WHEN
+        //parkingService.getNextParkingNumberIfAvailable();
+
+        // THEN
+        ParkingSpot parkingSpotActual = parkingService.getNextParkingNumberIfAvailable();
+       //parkingspot retourné (actual doit avoir en attributs : id = 1 et IsAvailable = true;
+        assertEquals( parkingSpotExpected.getId() , parkingSpotActual.getId());
+        assertEquals( parkingSpotExpected.isAvailable() , parkingSpotActual.isAvailable());
+    }
+/*
+    @Test
+    public void testGetNextParkingNumberIfAvailableParkingNumberNotFound(){  
+      //parkingSpotDAO.getNextAvailableSlot(parkingType) a mocker pour renvoi de valeur retour à 0 -> parkingspot reste à null
+
+      }
+
+
+*/
+
 }
         
 
