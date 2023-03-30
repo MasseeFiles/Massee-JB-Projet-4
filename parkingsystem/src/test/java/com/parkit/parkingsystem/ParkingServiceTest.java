@@ -47,8 +47,9 @@ public class ParkingServiceTest {
     @BeforeEach
     private void setUpPerTest() {
         try {
+          
             when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");  // pour appel de methode getVehicleRegNumber ex : processIncomingVehicle
-
+/*
             ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false); 
             Ticket ticket = new Ticket();
             ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
@@ -56,7 +57,8 @@ public class ParkingServiceTest {
             ticket.setVehicleRegNumber("ABCDEF");
 
             when(ticketDAO.getTicket(anyString())).thenReturn(ticket);  // si appel de BDD par methode getTicket, retourne objet ticket crée dans le test
-            when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(true); // method update renvoie true : elle a bien bien mise a jour ticket 
+*/
+
             //when(ticketDAO.getNbTicket(anyString())).thenReturn(3); //test pour un client recurrent
             when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);  // pareil avec parkingSpot
 
@@ -105,8 +107,28 @@ public class ParkingServiceTest {
 
     @Test
     public void processExitingVehicleTest(){    // ne retourne rien donc on teste des appels de methodes
-        when(ticketDAO.getNbTicket(anyString())).thenReturn(3);         
 
+
+
+            //when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");  // pour appel de methode getVehicleRegNumber ex : processIncomingVehicle
+
+            ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false); 
+            Ticket ticket = new Ticket();
+            ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
+            ticket.setParkingSpot(parkingSpot); // passage dans objet ticket du parkingSpot crée ligne 41
+            ticket.setVehicleRegNumber("ABCDEF");
+
+            when(ticketDAO.getTicket(anyString())).thenReturn(ticket);  // si appel de BDD par methode getTicket, retourne objet ticket crée dans le test
+
+
+
+
+
+
+
+
+
+        when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(true); 
         // WHEN
         parkingService.processExitingVehicle();
 
