@@ -48,7 +48,7 @@ public class ParkingServiceTest {
     private void setUpPerTest() {
         try {
           
-            when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");  // pour appel de methode getVehicleRegNumber ex : processIncomingVehicle
+            //when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");  // pour appel de methode getVehicleRegNumber ex : processIncomingVehicle
 
             //when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);  // pareil avec parkingSpot
 
@@ -63,12 +63,13 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void testProcessIncomingVehicle(){
+    public void testProcessIncomingVehicle() throws Exception {
 
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(4);  
         when(inputReaderUtil.readSelection()).thenReturn(1); 
         when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);  
         when(ticketDAO.getNbTicket(anyString())).thenReturn(4);  // vehicule recurrent
+        when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF"); 
        
         //WHEN
         parkingService.processIncomingVehicle();
@@ -81,14 +82,14 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void processExitingVehicleTest(){    // ne retourne rien donc on teste des appels de methodes
+    public void processExitingVehicleTest() throws Exception {    // ne retourne rien donc on teste des appels de methodes
 
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false); 
         Ticket ticket = new Ticket();
         ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
         ticket.setParkingSpot(parkingSpot); // passage dans objet ticket du parkingSpot crée ligne 41
         ticket.setVehicleRegNumber("ABCDEF");
-
+        when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF"); 
         when(ticketDAO.getTicket(anyString())).thenReturn(ticket);  // si appel de BDD par methode getTicket, retourne objet ticket crée dans le test
         when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(true); 
 
@@ -103,7 +104,7 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void processExitingVehicleTestUnableUpdate(){    
+    public void processExitingVehicleTestUnableUpdate() throws Exception {    
       /* Soit on teste affichage du message "Unable to update ticket information. Error occurred" - code dans else
         Soit on teste que parkingSpotDAO.updateParking(parkingSpot); n'est pas appelé - par defaut
       */
@@ -113,6 +114,7 @@ public class ParkingServiceTest {
         ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
         ticket.setParkingSpot(parkingSpot);
         ticket.setVehicleRegNumber("ABCDEF");
+        when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF"); 
 
         when(ticketDAO.getTicket(anyString())).thenReturn(ticket);  // si appel de BDD par methode getTicket, retourne objet ticket crée dans le test
         when(ticketDAO.updateTicket(any(Ticket.class))).thenReturn(false);
@@ -126,7 +128,7 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void testGetNextParkingNumberIfAvailable(){    
+    public void testGetNextParkingNumberIfAvailable(){    //  retourne un parkingSpot
 
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);  // assignation de parkingnumber - actual
         when(inputReaderUtil.readSelection()).thenReturn(1);  //  assignation de parkingtype - actual
@@ -144,8 +146,23 @@ public class ParkingServiceTest {
 /*
     @Test
     public void testGetNextParkingNumberIfAvailableParkingNumberNotFound(){  
-      //parkingSpotDAO.getNextAvailableSlot(parkingType) a mocker pour renvoi de valeur retour à 0 -> parkingspot reste à null
+        //parkingSpotDAO.getNextAvailableSlot(parkingType) a mocker pour renvoi de valeur retour à 0 -> parkingspot reste à null
+        when(parkingSpotDAO.getNextAvailableSlot(any(parkingType.class))).thenReturn(0);
 
+        // Controle du renvoi de l'exception : throw new Exception("Error fetching parking number from DB. Parking slots might be full");
+
+        assertThrows(Exception.class,() -> {       //controle du type d'exception renvoyé
+            parkingService.getNextParkingNumberIfAvailable();
+        });
+
+        Exception ex = Assertions.assertThrows(Exception.class, () -> {       //controle du message renvoyé par l'exception
+            parkingService.getNextParkingNumberIfAvailable();
+            throw new Exception ("Error fetching parking number from DB. Parking slots might be full");
+        });
+        String expectedMessage = ("Error fetching parking number from DB. Parking slots might be full");
+        String actualMessage = ex.getMessage();
+        assertEquals( expectedMessage , actualMessage);
+      }
       }
 
 
