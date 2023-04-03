@@ -15,7 +15,15 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Captor;
 import org.mockito.ArgumentCaptor;  
-import static org.junit.jupiter.api.Assertions.assertThrows;
+//import static org.junit.jupiter.api.Assertions.assertThrows;
+//import org.slf4j.Logger;    // logger
+//import nl.altindag.log.LogCaptor;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+//import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;     //logger
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Date;
@@ -31,6 +39,9 @@ public class ParkingServiceTest {
     private static ParkingService parkingService;
 
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+
+    //private static final Logger logger = LoggerFactory.getLogger(ParkingServiceTest.class);   //Logger
+
     
     @Mock
     private static InputReaderUtil inputReaderUtil;
@@ -43,17 +54,13 @@ public class ParkingServiceTest {
 
     @Captor
     private static ArgumentCaptor<Ticket> ticketCaptor;
+    //private static LogCaptor<ParkingService> logCaptor;
 
     @BeforeEach
     private void setUpPerTest() {
+
         try {
-          
-            //when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");  // pour appel de methode getVehicleRegNumber ex : processIncomingVehicle
-
-            //when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);  // pareil avec parkingSpot
-
             parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-
             System.setOut(new PrintStream(outputStreamCaptor)); 
 
         } catch (Exception e) {
@@ -105,10 +112,11 @@ public class ParkingServiceTest {
 
     @Test
     public void processExitingVehicleTestUnableUpdate() throws Exception {    
-      /* Soit on teste affichage du message "Unable to update ticket information. Error occurred" - code dans else
-        Soit on teste que parkingSpotDAO.updateParking(parkingSpot); n'est pas appelé - par defaut
-      */
-        
+
+    /* Soit on teste affichage du message "Unable to update ticket information. Error occurred" - code dans else
+    Soit on teste que parkingSpotDAO.updateParking(parkingSpot); n'est pas appelé - par defaut
+    */
+
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false); 
         Ticket ticket = new Ticket();
         ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
@@ -133,41 +141,87 @@ public class ParkingServiceTest {
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);  // assignation de parkingnumber - actual
         when(inputReaderUtil.readSelection()).thenReturn(1);  //  assignation de parkingtype - actual
         ParkingSpot parkingSpotExpected = new ParkingSpot(1, ParkingType.CAR , true);
-        
-        // WHEN
-        //parkingService.getNextParkingNumberIfAvailable();
 
-        // THEN
+        /* THEN
+        parkingspot retourné (actual) doit avoir en attributs : id = 1 et IsAvailable = true; */
+
         ParkingSpot parkingSpotActual = parkingService.getNextParkingNumberIfAvailable();
-       //parkingspot retourné (actual doit avoir en attributs : id = 1 et IsAvailable = true;
         assertEquals( parkingSpotExpected.getId() , parkingSpotActual.getId());
         assertEquals( parkingSpotExpected.isAvailable() , parkingSpotActual.isAvailable());
     }
-/*
+
+
     @Test
-    public void testGetNextParkingNumberIfAvailableParkingNumberNotFound(){  
+    public void testGetNextParkingNumberIfAvailableParkingNumberNotFound() {    //controle du message renvoyé par l'exception levée
+
         //parkingSpotDAO.getNextAvailableSlot(parkingType) a mocker pour renvoi de valeur retour à 0 -> parkingspot reste à null
-        when(parkingSpotDAO.getNextAvailableSlot(any(parkingType.class))).thenReturn(0);
-
-        // Controle du renvoi de l'exception : throw new Exception("Error fetching parking number from DB. Parking slots might be full");
-
-        assertThrows(Exception.class,() -> {       //controle du type d'exception renvoyé
-            parkingService.getNextParkingNumberIfAvailable();
+        when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(-1);
+        when(inputReaderUtil.readSelection()).thenReturn(2);
+/*
+// pas possible d'utiliser l'expression lambda
+        Exception ex = assertThrows(Exception.class, () -> {       
+        parkingService.getNextParkingNumberIfAvailable();
         });
 
-        Exception ex = Assertions.assertThrows(Exception.class, () -> {       //controle du message renvoyé par l'exception
-            parkingService.getNextParkingNumberIfAvailable();
-            throw new Exception ("Error fetching parking number from DB. Parking slots might be full");
-        });
         String expectedMessage = ("Error fetching parking number from DB. Parking slots might be full");
         String actualMessage = ex.getMessage();
+        
         assertEquals( expectedMessage , actualMessage);
-      }
-      }
+    }
 
+    */
 
+//essai avec recuperation d'exception - try/catch        
+        Exception ex = new Exception();
+        
+        try {
+            parkingService.getNextParkingNumberIfAvailable();
+            } catch (Exception e) {
+            ex = e ;             
+            };
+
+        String expectedMessage = ("Error fetching parking number from DB. Parking slots might be full");
+        String actualMessage = ex.getMessage();
+
+        assertEquals( expectedMessage , actualMessage);
+        }
+
+/*
+// essai avec class anonyme
+
+          Exception ex = assertThrows(Exception, new Executable() {
+              @Override
+              public void codeThrowingException() throws Throwable {
+                parkingService.getNextParkingNumberIfAvailable();
+              // throw new Exception("Error fetching parking number from DB. Parking slots might be full");
+              }
+          });
+
+        String expectedMessage = ("Error fetching parking number from DB. Parking slots might be full");
+        String actualMessage = ex.getMessage();
+        
+        assertEquals( expectedMessage , actualMessage);
+    }
 */
 
-}
-        
+    @Test
+    public void testGetNextParkingNumberIfAvailableParkingNumberWrongArgument() { 
+        when(inputReaderUtil.readSelection()).thenReturn(3);  //  lié à getVehicleType appelé dans getNextParkingNumberIfAvailable - 3 laisse parkingspot à null 
+
+        //WHEN
+        parkingService.getNextParkingNumberIfAvailable();
+        assertTrue(outputStreamCaptor.toString().contains("Incorrect input provided"));
+
+/*
+//logcaptor
+
+        assertTrue(logCaptor.getErrorLogs().contains("Error fetching next available parking slot"));
+
+        OU
+
+        assertThrows(IllegalArgumentException.class, () -> {
+        parkingService.getNextParkingNumberIfAvailable();
+        });*/
+    }
+}       
 
