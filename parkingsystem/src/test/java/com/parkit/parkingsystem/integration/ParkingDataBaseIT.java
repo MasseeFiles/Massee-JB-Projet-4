@@ -6,8 +6,9 @@ import com.parkit.parkingsystem.integration.config.DataBaseTestConfig;
 import com.parkit.parkingsystem.integration.service.DataBasePrepareService;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
-
 import com.parkit.parkingsystem.service.ParkingService;
+import com.parkit.parkingsystem.service.FareCalculatorService;
+import java.util.Date;
 import com.parkit.parkingsystem.util.InputReaderUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,26 +68,35 @@ public class ParkingDataBaseIT {
         assertTrue(ticketSaved != null);    //  ticket = null au début de ticketDAO.getTicket()
 
         ParkingSpot parkingSpotSaved = ticketSaved.getParkingSpot();
-        Boolean actualParkingSpotSavedAvailability = parkingSpotSaved.isAvailable();
-        Boolean expectedParkingSpotSavedAvailability = false;   //valeur attendue à false car l'emplacement sauvé n'est plus libre
+        Boolean actualAvailabilityParkingSpotSaved = parkingSpotSaved.isAvailable();
+        Boolean expectedAvailabilityParkingSpotSaved = false;   //valeur attendue à false car l'emplacement sauvé n'est plus libre
 
-        assertEquals(expectedParkingSpotSavedAvailability , actualParkingSpotSavedAvailability);    
-
+        assertEquals(expectedAvailabilityParkingSpotSaved , actualAvailabilityParkingSpotSaved);    
     }
-/*
+
     @Test
     public void testParkingLotExit(){
-        testParkingACar();
+        testParkingACar();  //execution du test précedent dans ce test - quelles conséquences?
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
         //WHEN
         parkingService.processExitingVehicle();
         
         //TODO: check that the fare generated and out time are populated correctly in the database
-String vehicleRegNumber = ("ABCDEF");
-        Double actualTicket = ticketDAO.getPrice(vehicleRegNumber);
+//Fare generated
+        Ticket ticketSaved = (ticketDAO.getTicket("ABCDEF"));
+        assertTrue ((ticketDAO.updateTicket(ticketSaved)) == true); // sauvegarde de price + outTime réussi sur BDD 
+        /*
+        Double savedPrice = ticketSaved.getPrice();
+        assertTrue(savedPrice ????);*/
 
-        Ticket.getprice Fare
+//OutTime - necessaire???
+/*
+        Date savedOutTime = ticketSaved.getOutTime();
+        Date expectedOutTime = new Date();*/
+        long savedOutTimeMilli = ticketSaved.getOutTime().getTime();
+        long expectedOutTimeMilli = new Date().getTime();
+        assertTrue((savedOutTimeMilli - expectedOutTimeMilli) < 500 );    // valeurs separées de - de 0.5 seconde (pb au test sur format de la date)
     }
-*/
+
 }
