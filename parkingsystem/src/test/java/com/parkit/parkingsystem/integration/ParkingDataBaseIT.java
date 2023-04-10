@@ -57,11 +57,11 @@ public class ParkingDataBaseIT {
     public void testParkingACar(){
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
-        //  WHEN
+        //WHEN
         parkingService.processIncomingVehicle();
 
         //TODO: check that a ticket is actualy saved in DB and Parking table is updated with availability
-        Ticket ticketSaved = (ticketDAO.getTicket("ABCDEF"));
+        Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
         assertNotNull(ticketSaved);    //  ticket = null au début de ticketDAO.getTicket()
 
         ParkingSpot parkingSpotSaved = ticketSaved.getParkingSpot();
@@ -72,18 +72,56 @@ public class ParkingDataBaseIT {
     @Test
     public void testParkingLotExit(){
         testParkingACar();  //execution du test précedent dans ce test
+
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+
+        //Configuration du ticket testé pour 1 heure de stationnement
+        Date inTimeTest = new Date();
+        inTimeTest.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
+        Ticket ticketTest = ticketDAO.getTicket("ABCDEF");
+        ticketTest.setInTime(inTimeTest);
+        ticketDAO.saveTicket(ticketTest);
 
         //WHEN
         parkingService.processExitingVehicle();
-        
-        //TODO: check that the fare generated and out time are populated correctly in the database
-        Ticket ticketSaved = (ticketDAO.getTicket("ABCDEF"));
 
+        //TODO: check that the fare generated and out time are populated correctly in the database
         
+        Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
+        Double savedPrice = ticketSaved.getPrice();
+        assertTrue( savedPrice > 0 );
 
         Date savedOutTime = ticketSaved.getOutTime();
         assertNotNull(savedOutTime);
     }
 
+        @Test
+    public void testParkingLotExitRecurringUser(){  //Sauvegarde de 2 tickets avec le meme numero d'immatriculation dans la base pour tester un vehicule recurrent
+        testParkingACar();  //Sauvegarde du 1er ticket ???
+
+        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+/*
+        //Création d'un premier ticket de stationnement pour le vehicule immatriculé "ABCDEF"
+        Ticket firstTicket = new Ticket();
+        firstTicket.setVehicleRegNumber("ABCDEF");
+        ticketDAO.saveTicket(firstTicket);
+
+*/
+
+        //Sauvegarde du 2e ticket - configuration pour 1 heure de stationnement
+        Date inTimeTest = new Date();
+        inTimeTest.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
+        Ticket ticketTest = ticketDAO.getTicket("ABCDEF");
+        ticketTest.setInTime(inTimeTest);
+        ticketDAO.saveTicket(ticketTest);
+
+        //WHEN
+        parkingService.processExitingVehicle();
+
+        Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
+
+        Double actualSavedPrice = ticketSaved.getPrice();
+        assertTrue (1.42 < actualSavedPrice);
+        assertTrue (actualSavedPrice <1.43);
+    }
 }
