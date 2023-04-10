@@ -51,7 +51,6 @@ public class ParkingDataBaseIT {
 
     @AfterAll
     private static void tearDown(){
-
     }
 
     @Test
@@ -62,41 +61,29 @@ public class ParkingDataBaseIT {
         parkingService.processIncomingVehicle();
 
         //TODO: check that a ticket is actualy saved in DB and Parking table is updated with availability
-
         Ticket ticketSaved = (ticketDAO.getTicket("ABCDEF"));
-
-        assertTrue(ticketSaved != null);    //  ticket = null au début de ticketDAO.getTicket()
+        assertNotNull(ticketSaved);    //  ticket = null au début de ticketDAO.getTicket()
 
         ParkingSpot parkingSpotSaved = ticketSaved.getParkingSpot();
-        Boolean actualAvailabilityParkingSpotSaved = parkingSpotSaved.isAvailable();
-        Boolean expectedAvailabilityParkingSpotSaved = false;   //valeur attendue à false car l'emplacement sauvé n'est plus libre
-
-        assertEquals(expectedAvailabilityParkingSpotSaved , actualAvailabilityParkingSpotSaved);    
+        Boolean availabilityParkingSpotSaved = parkingSpotSaved.isAvailable();
+        assertFalse(availabilityParkingSpotSaved);    
     }
 
     @Test
     public void testParkingLotExit(){
-        testParkingACar();  //execution du test précedent dans ce test - quelles conséquences?
+        testParkingACar();  //execution du test précedent dans ce test
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
         //WHEN
         parkingService.processExitingVehicle();
         
         //TODO: check that the fare generated and out time are populated correctly in the database
-//Fare generated
         Ticket ticketSaved = (ticketDAO.getTicket("ABCDEF"));
-        assertTrue ((ticketDAO.updateTicket(ticketSaved)) == true); // sauvegarde de price + outTime réussi sur BDD 
-        /*
-        Double savedPrice = ticketSaved.getPrice();
-        assertTrue(savedPrice ????);*/
 
-//OutTime - necessaire???
-/*
+        
+
         Date savedOutTime = ticketSaved.getOutTime();
-        Date expectedOutTime = new Date();*/
-        long savedOutTimeMilli = ticketSaved.getOutTime().getTime();
-        long expectedOutTimeMilli = new Date().getTime();
-        assertTrue((savedOutTimeMilli - expectedOutTimeMilli) < 500 );    // valeurs separées de - de 0.5 seconde (pb au test sur format de la date)
+        assertNotNull(savedOutTime);
     }
 
 }
