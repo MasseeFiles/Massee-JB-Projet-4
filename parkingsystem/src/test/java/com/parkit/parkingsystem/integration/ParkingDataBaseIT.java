@@ -7,7 +7,6 @@ import com.parkit.parkingsystem.integration.service.DataBasePrepareService;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.ParkingService;
-import com.parkit.parkingsystem.service.FareCalculatorService;
 import java.util.Date;
 import com.parkit.parkingsystem.util.InputReaderUtil;
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.when;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 
 @ExtendWith(MockitoExtension.class)
 public class ParkingDataBaseIT {
@@ -61,6 +59,8 @@ public class ParkingDataBaseIT {
         parkingService.processIncomingVehicle();
 
         //TODO: check that a ticket is actualy saved in DB and Parking table is updated with availability
+
+        //THEN
         Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
         assertNotNull(ticketSaved);    //  ticket = null au début de ticketDAO.getTicket()
 
@@ -87,6 +87,7 @@ public class ParkingDataBaseIT {
 
         //TODO: check that the fare generated and out time are populated correctly in the database
         
+        //THEN
         Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
         Double savedPrice = ticketSaved.getPrice();
         assertTrue( savedPrice > 0 );
@@ -96,19 +97,11 @@ public class ParkingDataBaseIT {
     }
 
         @Test
-    public void testParkingLotExitRecurringUser(){  //Sauvegarde de 2 tickets avec le meme numero d'immatriculation dans la base pour tester un vehicule recurrent
-        testParkingACar();  //Sauvegarde du 1er ticket ???
+    public void testParkingLotExitRecurringUser(){  
+        testParkingACar();  
 
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-/*
-        //Création d'un premier ticket de stationnement pour le vehicule immatriculé "ABCDEF"
-        Ticket firstTicket = new Ticket();
-        firstTicket.setVehicleRegNumber("ABCDEF");
-        ticketDAO.saveTicket(firstTicket);
 
-*/
-
-        //Sauvegarde du 2e ticket - configuration pour 1 heure de stationnement
         Date inTimeTest = new Date();
         inTimeTest.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
         Ticket ticketTest = ticketDAO.getTicket("ABCDEF");
@@ -118,6 +111,7 @@ public class ParkingDataBaseIT {
         //WHEN
         parkingService.processExitingVehicle();
 
+        //THEN
         Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
 
         Double actualSavedPrice = ticketSaved.getPrice();

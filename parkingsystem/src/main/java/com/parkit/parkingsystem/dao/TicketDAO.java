@@ -35,11 +35,11 @@ public class TicketDAO {  // couche intermédiaire entre objets métier et syst�
             logger.error("Error fetching next available slot",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
-            return false; 
         }
+        return false;
     }
 
-    public Ticket getTicket(String vehicleRegNumber) { //methode pour retrouver dans BDD un ticket à partir d'un numero de vehicule (parametre d'entrée)
+    public Ticket getTicket(String vehicleRegNumber) { //methode pour retrouver dans BDD un ticket à partir d'un numero de vehicule
         Connection con = null;
         Ticket ticket = null;
         try {
@@ -89,7 +89,7 @@ public class TicketDAO {  // couche intermédiaire entre objets métier et syst�
     public int getNbTicket (String vehicleRegNumber) { // parametre vehicleRegNumber pour identifier le vehicule
         Connection con = null;
         int numberOfTicketsStored = 0;
-        try {   // try permet une fermeture automatique du PreparedStatement
+        try {   
               con = dataBaseConfig.getConnection();
               String queryParameter = vehicleRegNumber;
               String sql = "SELECT COUNT(*) AS numberOfTicketsStored FROM ticket WHERE VEHICLE_REG_NUMBER LIKE ?";  

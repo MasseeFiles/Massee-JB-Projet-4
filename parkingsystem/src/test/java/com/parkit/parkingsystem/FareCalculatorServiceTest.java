@@ -13,36 +13,35 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Date;
 
-import java.lang.Boolean;    // Import pour utilisation de booleens
+import java.lang.Boolean;    
 
-public class FareCalculatorServiceTest {    // declaration de la classe de test
+public class FareCalculatorServiceTest {   
 
-    private static FareCalculatorService fareCalculatorService;     //declaration d'un objet fareCalculatorService - classe definie dans service
-    // pourquoi instanciation ne se fait pas par un constructeur? - parce que fait dans @before
-    private Ticket ticket;      //declaration d'un objet ticket - classe definie dans model
+    private static FareCalculatorService fareCalculatorService;     
+    private Ticket ticket;      
 
     @BeforeAll
-    private static void setUp() {     //declaration method preenregistrée "setup" pour fixer environnement de depart - private : ok implementation
-        fareCalculatorService = new FareCalculatorService();      // creation de l'objet farecalculatorservice (call constructeur)
+    private static void setUp() {     
+        fareCalculatorService = new FareCalculatorService();    
     }
 
     @BeforeEach   //fait avant chaque test suivants - ok pour 1 ticket par cas testé
     private void setUpPerTest() {
-        ticket = new Ticket();  // creation d'un objet ticket (call constructeur)
+        ticket = new Ticket();  
     }
 
     @Test
     public void calculateFareCar(){
-        Date inTime = new Date();   //creation variable : date entrée du vehicule
+        Date inTime = new Date();   
         inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );      //initialisation date entrée à (date actuelle - 1h)
-        Date outTime = new Date();  //creation variable : date sortie du vehicule - par defaut, à la valeur de la date actuelle
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);      // creation de place de parking occupée
+        Date outTime = new Date(); 
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);  
         Boolean discount = false;
 
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket , discount);  //calcul du prix à payer
+        fareCalculatorService.calculateFare(ticket , discount);  
         assertEquals(Fare.CAR_RATE_PER_HOUR, ticket.getPrice());
     }
 
@@ -111,7 +110,7 @@ public class FareCalculatorServiceTest {    // declaration de la classe de test
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket , false);
-        assertEquals( (0.75 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice()); // Pourquoi price = 0  ?????????
+        assertEquals( (0.75 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice()); 
     }
 
     @Test
@@ -166,7 +165,7 @@ public class FareCalculatorServiceTest {    // declaration de la classe de test
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        // ticket.setDiscount(discount);      // variable discount est à manipuler dans ticket 
+        
         fareCalculatorService.calculateFare(ticket, true);
         assertEquals( 1 * Fare.CAR_RATE_PER_HOUR * 0.95, ticket.getPrice());
     }
