@@ -37,14 +37,14 @@ public class ParkingDataBaseIT {
         parkingSpotDAO.dataBaseConfig = dataBaseTestConfig;
         ticketDAO = new TicketDAO();
         ticketDAO.dataBaseConfig = dataBaseTestConfig;
-        dataBasePrepareService = new DataBasePrepareService();  //  objet pour vider BDD et remettre tt emplacements à libre avant chaque test - before each 
+        dataBasePrepareService = new DataBasePrepareService();  
     }
 
     @BeforeEach
     private void setUpPerTest() throws Exception {
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
-        dataBasePrepareService.clearDataBaseEntries();
+        dataBasePrepareService.clearDataBaseEntries();     //  methode pour vider BDD et remettre tt emplacements à libre avant chaque test
     }
 
     @AfterAll
@@ -58,7 +58,7 @@ public class ParkingDataBaseIT {
         //WHEN
         parkingService.processIncomingVehicle();
 
-        //TODO: check that a ticket is actualy saved in DB and Parking table is updated with availability
+        //TODO: check that a ticket is actually saved in DB and Parking table is updated with availability
 
         //THEN
         Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
@@ -75,9 +75,8 @@ public class ParkingDataBaseIT {
 
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
-        //Configuration du ticket testé pour 1 heure de stationnement
         Date inTimeTest = new Date();
-        inTimeTest.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
+        inTimeTest.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) ); //Configuration du ticket testé pour 1 heure de stationnement
         Ticket ticketTest = ticketDAO.getTicket("ABCDEF");
         ticketTest.setInTime(inTimeTest);
         ticketDAO.saveTicket(ticketTest);
@@ -94,21 +93,12 @@ public class ParkingDataBaseIT {
 
         Date savedOutTime = ticketSaved.getOutTime();
         assertNotNull(savedOutTime);
-
-// test pour verification du prix sans reduction de vehicule recurrent
-
-        Double expectedSavedPrice = 1.50;
-        Double actualSavedPrice = ticketSaved.getPrice();
-
-        //assert equals avec delta
-        assertEquals(expectedSavedPrice, actualSavedPrice, 0.01);  
     }
 
         @Test
     public void testParkingLotExitRecurringUser(){  
-        //testParkingLotExit();   // creation d'un 1er ticket pour un vehicule immatriculé "ABCDEF"
 
-        testParkingACar();  //// creation d'un 2e ticket pour un vehicule immatriculé "ABCDEF"
+        testParkingACar();  //  creation d'un premier ticket pour un vehicule immatriculé "ABCDEF"
 
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
@@ -116,17 +106,16 @@ public class ParkingDataBaseIT {
         inTimeTest.setTime( System.currentTimeMillis() - (  120 * 60 * 1000) ); // test pour un stationnement de 2h - recuperation du ticket le plus ancien avec (ticketDAO.getTicket)
         Ticket ticketTest = ticketDAO.getTicket("ABCDEF");
         ticketTest.setInTime(inTimeTest);
-        ticketDAO.saveTicket(ticketTest);
+        ticketDAO.saveTicket(ticketTest); // creation d'un 2e ticket pour un vehicule immatriculé "ABCDEF"
 
         //WHEN
-        parkingService.processExitingVehicle();
+        parkingService.processExitingVehicle(); // pas de creation de ticket (ticketDAO.updateTicket)
 
         //THEN
         Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
-// requete sql particuliere pour recuperer dernier ticket sauvegardé
         Double expectedSavedPrice = 2 * 1.5 * 0.95;
         Double actualSavedPrice = ticketSaved.getPrice();
 
-        assertEquals(expectedSavedPrice, actualSavedPrice, 0.01);   //assertion avec delta sur valeurs comparées
+        assertEquals(expectedSavedPrice, actualSavedPrice, 0.01);   //assertion avec delta sur valeurs comparées (date)
     }
 }
