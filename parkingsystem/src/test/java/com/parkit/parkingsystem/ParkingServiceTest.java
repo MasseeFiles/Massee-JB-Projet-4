@@ -15,7 +15,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Captor;
 import org.mockito.ArgumentCaptor;  
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -78,12 +77,12 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void processExitingVehicleTest() throws Exception {    // ne retourne rien donc on teste des appels de methodes
+    public void processExitingVehicleTest() throws Exception {    // methode testée ne retourne rien donc on teste des appels de methodes
 
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false); 
         Ticket ticket = new Ticket();
-        ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
-        ticket.setParkingSpot(parkingSpot); // passage dans objet ticket du parkingSpot crée ligne 41
+        ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //test effectué pour une durée de stationnement de 1 heure
+        ticket.setParkingSpot(parkingSpot); 
         ticket.setVehicleRegNumber("ABCDEF");
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF"); 
         when(ticketDAO.getTicket(anyString())).thenReturn(ticket);  // si appel de BDD par methode getTicket, retourne objet ticket crée dans le test
@@ -104,7 +103,7 @@ public class ParkingServiceTest {
 
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false); 
         Ticket ticket = new Ticket();
-        ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //tests effectués pour une durée de stationnement de 1 heure
+        ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));  //test effectué pour une durée de stationnement de 1 heure
         ticket.setParkingSpot(parkingSpot);
         ticket.setVehicleRegNumber("ABCDEF");
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF"); 
@@ -121,7 +120,7 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void testGetNextParkingNumberIfAvailable(){    //  retourne un parkingSpot
+    public void testGetNextParkingNumberIfAvailable(){    //  methode testée retourne un parkingSpot
 
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(1);  // assignation de parkingnumber - actual
         when(inputReaderUtil.readSelection()).thenReturn(1);  //  assignation de parkingtype - actual
@@ -135,7 +134,6 @@ public class ParkingServiceTest {
     @Test
     public void testGetNextParkingNumberIfAvailableParkingNumberNotFound() {    
 
-        //parkingSpotDAO.getNextAvailableSlot(parkingType) a mocker pour renvoi de valeur retour à 0 -> parkingspot reste à null
         when(parkingSpotDAO.getNextAvailableSlot(any(ParkingType.class))).thenReturn(-1);
         when(inputReaderUtil.readSelection()).thenReturn(2);
 

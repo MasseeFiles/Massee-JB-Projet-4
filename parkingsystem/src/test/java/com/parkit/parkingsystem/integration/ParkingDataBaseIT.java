@@ -58,8 +58,6 @@ public class ParkingDataBaseIT {
         //WHEN
         parkingService.processIncomingVehicle();
 
-        //TODO: check that a ticket is actually saved in DB and Parking table is updated with availability
-
         //THEN
         Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
         assertNotNull(ticketSaved);    //  ticket = null au début de ticketDAO.getTicket()
@@ -84,8 +82,6 @@ public class ParkingDataBaseIT {
         //WHEN
         parkingService.processExitingVehicle();
 
-        //TODO: check that the fare generated and out time are populated correctly in the database
-        
         //THEN
         Ticket ticketSaved = ticketDAO.getTicket("ABCDEF");
         Double savedPrice = ticketSaved.getPrice();
@@ -116,6 +112,6 @@ public class ParkingDataBaseIT {
         Double expectedSavedPrice = 2 * 1.5 * 0.95;
         Double actualSavedPrice = ticketSaved.getPrice();
 
-        assertEquals(expectedSavedPrice, actualSavedPrice, 0.01);   //assertion avec delta sur valeurs comparées (date)
+        assertEquals(expectedSavedPrice, actualSavedPrice, 0.01);   //assertion avec delta à cause des variables "Date"
     }
 }
