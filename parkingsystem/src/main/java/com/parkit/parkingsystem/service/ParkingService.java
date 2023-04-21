@@ -1,4 +1,4 @@
-       package com.parkit.parkingsystem.service;
+package com.parkit.parkingsystem.service;
 
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
@@ -31,9 +31,9 @@ public class ParkingService {
         try{
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable(); //methode definie plus bas
             if(parkingSpot !=null && parkingSpot.getId() > 0){
-                String vehicleRegNumber = getVehichleRegNumber(); 
+                String vehicleRegNumber = getVehichleRegNumber(); // mock inputReaderUtil.readVehicleRegistrationNumber()
                 parkingSpot.setAvailable(false);
-                parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
+                parkingSpotDAO.updateParking(parkingSpot);  //allot this parking space and mark it's availability as false - possibilité de test
 
                 Date inTime = new Date();
                 Ticket ticket = new Ticket();
@@ -60,7 +60,7 @@ public class ParkingService {
 
     private String getVehichleRegNumber() throws Exception {
         System.out.println("Please type the vehicle registration number and press enter key");
-        return inputReaderUtil.readVehicleRegistrationNumber();
+        return inputReaderUtil.readVehicleRegistrationNumber();// renvoi un string
     }
 
     public ParkingSpot getNextParkingNumberIfAvailable(){
@@ -70,10 +70,10 @@ public class ParkingService {
             ParkingType parkingType = getVehichleType();
             parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);
             if(parkingNumber > 0){
-                parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);
+                parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);    
             }else{
-                throw new Exception("Error fetching parking number from DB. Parking slots might be full");
-            }
+                throw new Exception("Error fetching parking number from DB. Parking slots might be full");    //à tester
+            }   
         }catch(IllegalArgumentException ie){
             logger.error("Error parsing user input for type of vehicle", ie);
         }catch(Exception e){
@@ -95,8 +95,8 @@ public class ParkingService {
                 return ParkingType.BIKE;
             }
             default: {
-                System.out.println("Incorrect input provided");
-                throw new IllegalArgumentException("Entered input is invalid");
+                System.out.println("Incorrect input provided");   // a tester outputStreamCaptor
+                throw new IllegalArgumentException("Entered input is invalid"); 
             }
         }
     }
@@ -109,16 +109,16 @@ public class ParkingService {
             ticket.setOutTime(outTime);
             Boolean discount = false;
 
-            if (ticketDAO.getNbTicket(vehicleRegNumber) > 1) {    // appel methode getNbTicket pour determiner si vehicules reccurents
+            if (ticketDAO.getNbTicket(vehicleRegNumber) > 1) {    // testé : appel methode getNbTicket pour determiner si vehicules recurrents
                 discount = true;
             }
 
             fareCalculatorService.calculateFare(ticket , discount);
 
-            if (ticketDAO.updateTicket(ticket)) { // condition : il y a eu un update de ticket (oui/non) - synthaxe ok car methode renvoie un boolean
+            if (ticketDAO.updateTicket(ticket)) { // condition : il y a eu un update de ticket (oui/non) - syntaxe ok car methode renvoie un boolean
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
-                parkingSpotDAO.updateParking(parkingSpot);  // objet du test : methode appelée une fois (verification que place de parking est redevenue libre)
+                parkingSpotDAO.updateParking(parkingSpot);  // testé : verification qu'on enregistre dans la BDD que la place de parking est redevenue libre
                 System.out.println("Please pay the parking fare:" + ticket.getPrice());
                 System.out.println("Recorded out-time for vehicle number:" + ticket.getVehicleRegNumber() + " is:" + outTime);
             } else {

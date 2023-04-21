@@ -41,9 +41,6 @@ public class ParkingServiceTest {
     @Mock
     private static TicketDAO ticketDAO;
 
-    @Captor
-    private static ArgumentCaptor<Ticket> ticketCaptor;
-
     @BeforeEach
     private void setUpPerTest() {
 
@@ -139,18 +136,6 @@ public class ParkingServiceTest {
 
         assertTrue(parkingService.getNextParkingNumberIfAvailable() == null);
 
-/*
-// pas possible d'utiliser l'expression lambda
-        Exception ex = assertThrows(Exception.class, () -> {       
-        parkingService.getNextParkingNumberIfAvailable();
-        });
-
-        String expectedMessage = ("Error fetching parking number from DB. Parking slots might be full");
-        String actualMessage = ex.getMessage();
-        
-        assertEquals( expectedMessage , actualMessage);
-    }
-*/
     }
 
     @Test
